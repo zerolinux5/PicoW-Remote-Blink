@@ -14,6 +14,12 @@ void init_spi()
     gpio_set_function(PICO_DEFAULT_SPI_CSN_PIN, GPIO_FUNC_SPI);
 }
 
+void init_gpio_out(int pin)
+{
+    gpio_init(pin);
+    gpio_set_dir(pin, GPIO_OUT);
+}
+
 int main()
 {
     stdio_init_all();
@@ -23,8 +29,7 @@ int main()
 #else
     init_spi();
 
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
+    init_gpio_out(LED_PIN);
 
     bool state = false;
 

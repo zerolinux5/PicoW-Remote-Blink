@@ -13,6 +13,13 @@ void init_spi()
     gpio_set_function(PICO_DEFAULT_SPI_CSN_PIN, GPIO_FUNC_SPI);
 }
 
+void init_button(int pin)
+{
+    gpio_init(pin);
+    gpio_set_dir(pin, GPIO_IN);
+    gpio_pull_down(pin);
+}
+
 int main()
 {
     stdio_init_all();
@@ -21,10 +28,8 @@ int main()
     puts("Default SPI pins were not defined");
 #else
     init_spi();
+    init_button(BUTTON_PIN);
 
-    gpio_init(BUTTON_PIN);
-    gpio_set_dir(BUTTON_PIN, GPIO_IN);
-    gpio_pull_down(BUTTON_PIN);
     bool state = false;
 
     uint8_t out_buf[BUF_LEN], in_buf[BUF_LEN];
