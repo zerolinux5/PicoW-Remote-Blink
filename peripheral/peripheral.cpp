@@ -6,8 +6,10 @@ const uint BUF_LEN = 1;
 
 void init_spi()
 {
+    // Initialize the SPI with a transfer speed of 1 MHz
     spi_init(spi_default, 1000 * 1000);
     spi_set_slave(spi_default, true);
+    // Set the function of the pins for the SPI communication
     gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
@@ -23,6 +25,7 @@ void init_gpio_out(int pin)
 int main()
 {
     stdio_init_all();
+    // Check if the default SPI pins are defined
 #if !defined(spi_default) || !defined(PICO_DEFAULT_SPI_SCK_PIN) || !defined(PICO_DEFAULT_SPI_TX_PIN) || !defined(PICO_DEFAULT_SPI_RX_PIN) || !defined(PICO_DEFAULT_SPI_CSN_PIN)
 #warning spi/spi_master example requires a board with SPI pins
     puts("Default SPI pins were not defined");
@@ -33,10 +36,13 @@ int main()
 
     bool state = false;
 
+    // Buffers for the data to be transmitted and received
     uint8_t out_buf[BUF_LEN], in_buf[BUF_LEN];
+
     while (true)
     {
         spi_write_read_blocking(spi_default, out_buf, in_buf, BUF_LEN);
+        // If data is received and the state change is correct, toggle the LED.
         if (in_buf[0] == 1 && state == false)
         {
             state = true;
