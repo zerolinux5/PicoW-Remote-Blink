@@ -6,7 +6,7 @@ const int BUTTON_PIN = 20;
 const uint BUF_LEN = 1;
 
 // Buffers for data transfer over SPI
-static uint8_t out_buf[BUF_LEN], in_buf[BUF_LEN];
+static uint8_t out_buf[BUF_LEN];
 
 void init_spi()
 {
@@ -33,7 +33,7 @@ void gpio_callback(uint gpio, uint32_t events)
     if (events & GPIO_IRQ_EDGE_FALL)
     {
         out_buf[0] = 1;
-        spi_write_read_blocking(spi_default, out_buf, in_buf, BUF_LEN);
+        spi_write_blocking(spi_default, out_buf, BUF_LEN);
     }
 }
 
@@ -48,10 +48,8 @@ int main()
     init_spi();
     init_button(BUTTON_PIN);
 
-    // Track the state of the LED on the other side.
-    bool state = false;
-
-    gpio_set_irq_enabled_with_callback(BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    // What GPIO to use, what mask to interrupt on, irq enabled status, and callback function.
+    gpio_set_irq_enabled_with_callback(BUTTON_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     while (true)
     {
