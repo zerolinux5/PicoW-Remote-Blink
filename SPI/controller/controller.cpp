@@ -1,8 +1,12 @@
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
+#include <stdio.h>
 
 const int BUTTON_PIN = 20;
 const uint BUF_LEN = 1;
+
+// Buffers for data transfer over SPI
+static uint8_t out_buf[BUF_LEN], in_buf[BUF_LEN];
 
 void init_spi()
 {
@@ -23,6 +27,16 @@ void init_button(int pin)
     gpio_pull_down(pin);
 }
 
+void gpio_callback(uint gpio, uint32_t events)
+{
+    // If events is set to EDGE_FALL, the button was pressed
+    if (events & GPIO_IRQ_EDGE_FALL)
+    {
+        out_buf[0] = 1;
+        spi_write_read_blocking(spi_default, out_buf, in_buf, BUF_LEN);
+    }
+}
+
 int main()
 {
     stdio_init_all();
@@ -37,27 +51,10 @@ int main()
     // Track the state of the LED on the other side.
     bool state = false;
 
-    // Buffers for data transfer over SPI
-    uint8_t out_buf[BUF_LEN], in_buf[BUF_LEN];
+    gpio_set_irq_enabled_with_callback(BUTTON_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     while (true)
     {
-        int value = gpio_get(BUTTON_PIN);
-        // If the button is pressed and the state change is correct, send a 1 over SPI
-        if (value == 1 && state == false)
-        {
-            state = true;
-            out_buf[0] = 1;
-            spi_write_read_blocking(spi_default, out_buf, in_buf, BUF_LEN);
-            sleep_ms(1000);
-        }
-        else if (value == 1 && state == true)
-        {
-            state = false;
-            out_buf[0] = 1;
-            spi_write_read_blocking(spi_default, out_buf, in_buf, BUF_LEN);
-            sleep_ms(1000);
-        }
     }
 #endif
 }
